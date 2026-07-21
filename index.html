@@ -1,0 +1,556 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="initial-scale=1,user-scalable=no,maximum-scale=1,width=device-width">
+        <meta name="mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <link rel="stylesheet" href="./resources/ol.css">
+        <link rel="stylesheet" href="resources/fontawesome-all.min.css">
+        <link href="resources/photon-geocoder-autocomplete.min.css" rel="stylesheet">
+        <link rel="stylesheet" href="./resources/ol-layerswitcher.css">
+        <link rel="stylesheet" href="./resources/qgis2web.css">
+        <style>
+        :root {
+            --page-bg: #e8eef6;
+            --panel-bg: #ffffff;
+            --panel-soft: hsla(218, 100%, 98%, 0.65);
+            --text-primary: #111;
+            --text-secondary: #235a88;
+            --text-heading: #002b5c;
+            --border-color: #d1d9e8;
+            --accent: #003c88;
+            --accent-2: #0066b3;
+            --accent-soft: #e8f1fb;
+            --shadow: 0 4px 14px rgba(0, 0, 0, 0.18);
+        }
+        body[data-theme="dark"] {
+            --page-bg: #0f172a;
+            --panel-bg: #111827;
+            --panel-soft: rgba(15, 23, 42, 0.94);
+            --text-primary: #f8fafc;
+            --text-secondary: #bfdbfe;
+            --text-heading: #e2e8f0;
+            --border-color: #334155;
+            --accent: #93c5fd;
+            --accent-2: #60a5fa;
+            --accent-soft: #1e293b;
+            --shadow: 0 12px 32px rgba(2, 6, 23, 0.45);
+        }
+        html, body {
+            min-height: 100vh;
+            width: 100%;
+            margin: 0;
+            padding: 0;
+            font-family: "Segoe UI", Arial, sans-serif;
+            background: var(--page-bg);
+            color: var(--text-primary);
+            display: flex;
+            flex-direction: column;
+        }
+        #zfmt-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+            height: 64px;
+            background: linear-gradient(90deg, #003c88 0%, #0066b3 100%);
+            color: #fff;
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18);
+            z-index: 1000;
+        }
+        #zfmt-header .zfmt-header-logo {
+            font-weight: 800;
+            font-size: 1.05rem;
+            letter-spacing: 0.18em;
+            text-transform: uppercase;
+        }
+        #zfmt-header .zfmt-header-text {
+            text-align: right;
+            line-height: 1.1;
+        }
+        #zfmt-header .zfmt-header-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+        }
+        #zfmt-header .zfmt-header-subtitle {
+            font-size: 0.85rem;
+            opacity: 0.85;
+            margin-top: 2px;
+        }
+        .theme-toggle {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            height: 40px;
+            margin: 0 0 14px 0;
+            padding: 0 12px;
+            border: 1px solid var(--border-color);
+            background: var(--panel-bg);
+            color: var(--accent);
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 0.95rem;
+            font-weight: 700;
+            transition: all 0.2s ease;
+        }
+        .theme-toggle:hover {
+            background: var(--accent-soft);
+            border-color: var(--border-color);
+            transform: translateY(-1px);
+        }
+        #map {
+            flex: 1;
+            min-height: 0;
+            width: 100%;
+            position: relative;
+        }
+        .ol-control > * {
+            background-color: var(--panel-bg)!important;
+            color: var(--accent)!important;
+            border: 1px solid var(--border-color)!important;
+            border-radius: 0!important;
+            box-shadow: var(--shadow)!important;
+        }
+        .ol-control > *:focus,
+        .ol-control > *:hover {
+            background-color: var(--accent-soft)!important;
+            color: var(--text-heading)!important;
+        }
+        .ol-control button {
+            color: var(--accent)!important;
+            background-color: var(--panel-bg)!important;
+            border: 1px solid var(--border-color)!important;
+        }
+        .ol-control button:focus,
+        .ol-control button:hover {
+            background-color: var(--accent-soft)!important;
+            color: var(--text-heading)!important;
+        }
+        .ol-popup {
+            background-color: var(--panel-bg);
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            color: var(--text-primary);
+        }
+        .ol-popup:after {
+            border-top-color: var(--panel-bg);
+        }
+        .ol-popup:before {
+            border-top-color: var(--border-color);
+        }
+        .ol-popup-closer {
+            color: var(--accent);
+        }
+        .ol-popup-closer:after {
+            content: "×";
+            font-weight: bold;
+        }
+        .ol-attribution a,
+        .gcd-gl-input::placeholder,
+        .search-layer-input-search::placeholder {
+            color: #003c88!important;
+        }
+        .search-layer-input-search {
+            background-color: #f1f7ff!important;
+        }
+        .ol-overlaycontainer-stopevent #top-right-container .layer-switcher:hover ~ .ol-overlaycontainer-stopevent .ol-overlay-container .ol-popup {
+            display: none!important;
+        }
+        #layer-search-panel {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 12px;
+            padding: 3px 6px;
+            background: var(--panel-bg);
+            border-bottom: 1px solid var(--border-color);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+            z-index: 900;
+        }
+        .layer-search-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 3px 6px;
+            background: var(--accent-soft);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            min-width: 20px;
+            flex: 1 1 20px;
+        }
+        .layer-search-wrapper label {
+            font-size: 13px;
+            color: var(--accent);
+            white-space: nowrap;
+            min-width: 30px;
+        }
+        .layer-search-wrapper input {
+            flex: 1;
+            min-width: 30px;
+            height: 32px;
+            padding: 4px 8px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            outline: none;
+            font-size: 12px;
+            color: var(--text-primary);
+            background: var(--panel-bg);
+        }
+        .layer-search-wrapper button {
+            height: 36px;
+            padding: 0 14px;
+            border: 1px solid #003c88;
+            background: #003c88;
+            color: #ffffff;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+        }
+        .layer-search-wrapper button:hover {
+            background: #002359;
+        }
+        .search-message {
+            color: var(--accent);
+            font-size: 12px;
+            min-width: 160px;
+        }
+        #app-container {
+            display: flex;
+            flex: 1;
+            min-height: 0;
+            width: 100%;
+        }
+        #sidebar {
+            width: 300px;
+            min-width: 58px;
+            max-width: 320px;
+            padding: 18px;
+            background: var(--panel-soft);
+            border-right: 1px solid var(--border-color);
+            box-shadow: inset -1px 0 0 rgba(0, 0, 0, 0.06);
+            overflow-y: auto;
+            position: relative;
+            transition: width 0.25s ease;
+        }
+        #sidebar.collapsed {
+            width: 58px;
+            padding: 12px 8px;
+        }
+        #sidebar .sidebar-card {
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+        }
+        #sidebar .sidebar-card-header {
+            padding-bottom: 6px;
+            border-bottom: 1px solid #d1d9e8;
+        }
+        #sidebar .sidebar-card-header h2 {
+            margin: 0 0 4px;
+            font-size: 1.1rem;
+            letter-spacing: 0.04em;
+            color: var(--text-heading);
+        }
+        #sidebar .sidebar-card-header p {
+            margin: 0;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            line-height: 1.35;
+        }
+        .sidebar-section {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .sidebar-section h3 {
+            margin: 0;
+            font-size: 0.95rem;
+            color: var(--accent);
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+        }
+        #layer-search-panel,
+        #layer-opacity-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            width: 100%;
+        }
+        .layer-search-wrapper,
+        .layer-opacity-wrapper {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            padding: 12px 14px;
+            background: var(--panel-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+        }
+        .layer-search-wrapper label,
+        .layer-opacity-wrapper label {
+            font-size: 0.9rem;
+            color: var(--accent);
+            margin: 0;
+        }
+        .layer-search-wrapper input,
+        .layer-opacity-wrapper input[type="range"] {
+            width: 100%;
+            height: 32px;
+            padding: 6px 8px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            background: var(--accent-soft);
+            color: var(--text-primary);
+            font-size: 0.92rem;
+            box-sizing: border-box;
+        }
+        .layer-search-wrapper button,
+        .layer-opacity-wrapper button {
+            width: auto;
+            min-width: 100px;
+            align-self: flex-start;
+            border-radius: 8px;
+            padding: 0 12px;
+            height: 36px;
+        }
+        .layer-search-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .layer-search-row input {
+            flex: 0 0 50px;
+            width: 50px;
+            min-width: 40px;
+        }
+        #search-concesiones-input,
+        #search-ocupantes-input {
+            flex: 50px;
+            width: 50px;
+            min-width: 150px;
+        }
+        .layer-search-row button {
+            min-width: 100px;
+            height: 34px;
+        }
+        .layer-opacity-wrapper {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 14px;
+        }
+        .layer-opacity-value {
+            width: 50px;
+            text-align: right;
+            color: var(--accent);
+            font-size: 0.9rem;
+            white-space: nowrap;
+        }
+        .sidebar-toggle {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            height: 40px;
+            margin-bottom: 14px;
+            background: var(--panel-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            color: var(--accent);
+            font-size: 0.95rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .sidebar-toggle:hover {
+            background: var(--accent-soft);
+            border-color: var(--border-color);
+        }
+        #sidebar.collapsed .sidebar-card,
+        #sidebar.collapsed .sidebar-card-header,
+        #sidebar.collapsed .sidebar-section,
+        #sidebar.collapsed #layer-search-panel,
+        #sidebar.collapsed #layer-opacity-panel {
+            display: none;
+        }
+        #sidebar.collapsed .sidebar-toggle {
+            width: 40px;
+            height: 40px;
+            margin-bottom: 0;
+            border-radius: 20%;
+            font-size: 1.15rem;
+            padding: 0;
+        }
+        #map-container {
+            flex: 1;
+            min-height: 0;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+        }
+        #coordinate-display {
+            position: absolute;
+            left: 20px;
+            right: 20px;
+            bottom: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 38px;
+            padding: 10px 16px;
+            background: rgba(255, 255, 255, 0.72);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            color: var(--accent);
+            font-size: 13px;
+            font-weight: 600;
+            z-index: 1200;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+        }
+        body[data-theme="dark"] #coordinate-display {
+            background: rgba(15, 23, 42, 0.82);
+            color: var(--text-primary);
+        }
+        #map {
+            flex: 1;
+            min-height: 0;
+            width: 100%;
+            position: relative;
+        }
+        </style>
+        <title>Geoportal Zona Federal Marítimo Terrestre</title>
+    </head>
+    <body>
+        <div id="zfmt-header">
+            <div class="zfmt-header-logo">Información territorial y cartografía oficial </div>
+            <div class="zfmt-header-text">
+                <div class="zfmt-header-title">Geoportal Zona Federal Marítimo Terrestre</div>
+                <div class="zfmt-header-subtitle">H. XVIII Ayuntamiento de La Paz, Baja California Sur</div>
+            </div>
+        </div>
+        <main id="app-container">
+            <aside id="sidebar">
+                <button id="theme-toggle" class="theme-toggle" type="button" aria-pressed="false">🌙 Modo oscuro</button>
+                <button id="sidebar-toggle" class="sidebar-toggle" type="button" aria-expanded="true">≡</button>
+                <div class="sidebar-card">
+                    <div class="sidebar-card-header">
+                        <h2>Geoportal Interno ZFMT</h2>
+                        <p>Herramientas de búsqueda y control de transparencia de capas.</p>
+                    </div>
+                    <section class="sidebar-section">
+                        <h3>Búsqueda</h3>
+                        <div id="layer-search-panel">
+                            <div class="layer-search-wrapper">
+                                <label for="search-concesiones-input">Buscar concesión (No. Concesión):</label>
+                                <div class="layer-search-row">
+                                    <input id="search-concesiones-input" type="search" placeholder="No. Conces" list="concesiones-list" autocomplete="off" />
+                                    <button id="search-concesiones-button" type="button">Buscar</button>
+                                </div>
+                                <span id="search-concesiones-message" class="search-message"></span>
+                                <datalist id="concesiones-list"></datalist>
+                            </div>
+                            <div class="layer-search-wrapper">
+                                <label for="search-ocupantes-input">Buscar ocupante irregular (Clave):</label>
+                                <div class="layer-search-row">
+                                    <input id="search-ocupantes-input" type="search" placeholder="Clave" list="ocupantes-list" autocomplete="off" />
+                                    <button id="search-ocupantes-button" type="button">Buscar</button>
+                                </div>
+                                <span id="search-ocupantes-message" class="search-message"></span>
+                                <datalist id="ocupantes-list"></datalist>
+                            </div>
+                            <div class="layer-search-wrapper">
+                                <label for="plan-title-input">Título del plano</label>
+                                <input id="plan-title-input" type="text" placeholder="Escribe el título del plano" />
+                                <button id="export-plan-button" type="button">Exportar PDF</button>
+                                <span id="export-plan-message" class="search-message"></span>
+                            </div>
+                        </div>
+                    </section>
+                    <section class="sidebar-section">
+                        <h3>Transparencia de capas</h3>
+                        <div id="layer-opacity-panel">
+                            <div class="layer-opacity-wrapper">
+                                <label for="opacity-concesiones">Concesiones</label>
+                                <input id="opacity-concesiones" type="range" min="10" max="100" value="100" step="5" />
+                                <span id="opacity-concesiones-value" class="layer-opacity-value">100%</span>
+                            </div>
+                            <div class="layer-opacity-wrapper">
+                                <label for="opacity-acuerdos">Acuerdos destino</label>
+                                <input id="opacity-acuerdos" type="range" min="10" max="100" value="100" step="5" />
+                                <span id="opacity-acuerdos-value" class="layer-opacity-value">100%</span>
+                            </div>
+                            <div class="layer-opacity-wrapper">
+                                <label for="opacity-desincorporaciones">Desincorporaciones TGM</label>
+                                <input id="opacity-desincorporaciones" type="range" min="10" max="100" value="100" step="5" />
+                                <span id="opacity-desincorporaciones-value" class="layer-opacity-value">100%</span>
+                            </div>
+                            <div class="layer-opacity-wrapper">
+                                <label for="opacity-ocupantes">Ocupantes irregulares</label>
+                                <input id="opacity-ocupantes" type="range" min="10" max="100" value="100" step="5" />
+                                <span id="opacity-ocupantes-value" class="layer-opacity-value">100%</span>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+            </aside>
+            <section id="map-container">
+                <div id="coordinate-display">UTM coordinates: mover el cursor sobre el mapa</div>
+                <div id="map">
+                    <div id="popup" class="ol-popup">
+                        <a href="#" id="popup-closer" class="ol-popup-closer"></a>
+                        <div id="popup-content"></div>
+                    </div>
+                </div>
+            </section>
+        </main>
+        <script src="resources/qgis2web_expressions.js"></script>
+        <script src="./resources/functions.js"></script>
+        <script src="./resources/ol.js"></script>
+        <script src="./resources/ol-layerswitcher.js"></script>
+        <script src="resources/photon-geocoder-autocomplete.min.js"></script>
+        <script src="resources/olms.js"></script>
+        <script src="resources/proj4.js"></script>
+        <script src="layers/OcupantesirregularesZFMT_1.js"></script><script src="layers/DesincorporacionesDGZFMT_2.js"></script><script src="layers/AcuerdosDestinoDGZMT_3.js"></script><script src="layers/ConcesionesDGZFMT_4.js"></script><script src="layers/DelimitacionesDGZFMT_5.js"></script><script src="layers/Cuadriculaestrategicazonificada_6.js"></script>
+        <script src="styles/OcupantesirregularesZFMT_1_style.js"></script><script src="styles/DesincorporacionesDGZFMT_2_style.js"></script><script src="styles/AcuerdosDestinoDGZMT_3_style.js"></script><script src="styles/ConcesionesDGZFMT_4_style.js"></script><script src="styles/DelimitacionesDGZFMT_5_style.js"></script><script src="styles/Cuadriculaestrategicazonificada_6_style.js"></script>
+        <script src="./layers/layers.js" type="text/javascript"></script> 
+        <script src="./resources/Autolinker.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+        <script src="./resources/qgis2web.js"></script>
+        <script>
+            var sidebar = document.getElementById('sidebar');
+            var sidebarToggle = document.getElementById('sidebar-toggle');
+            var themeToggle = document.getElementById('theme-toggle');
+
+            sidebarToggle.addEventListener('click', function() {
+                var collapsed = sidebar.classList.toggle('collapsed');
+                sidebarToggle.setAttribute('aria-expanded', String(!collapsed));
+                sidebarToggle.textContent = collapsed ? '»' : '≡';
+            });
+
+            function updateThemeButton(theme) {
+                var isDark = theme === 'dark';
+                themeToggle.setAttribute('aria-pressed', String(isDark));
+                themeToggle.textContent = isDark ? '☀️ Modo claro' : '🌙 Modo oscuro';
+            }
+
+            var savedTheme = localStorage.getItem('zfmt-theme');
+            var initialTheme = savedTheme || 'light';
+            document.body.setAttribute('data-theme', initialTheme);
+            updateThemeButton(initialTheme);
+
+            themeToggle.addEventListener('click', function() {
+                var nextTheme = document.body.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+                document.body.setAttribute('data-theme', nextTheme);
+                localStorage.setItem('zfmt-theme', nextTheme);
+                updateThemeButton(nextTheme);
+            });
+        </script>
+    </body>
+</html>
