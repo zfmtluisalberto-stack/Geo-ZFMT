@@ -452,15 +452,214 @@
             width: 100%;
             position: relative;
         }
+        body:not(.authenticated) #app-container {
+            display: none;
+        }
+        .zfmt-header-right {
+            display: flex;
+            align-items: center;
+            gap: 18px;
+        }
+        .zfmt-header-user {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.85rem;
+        }
+        .zfmt-header-user button {
+            height: 32px;
+            padding: 0 12px;
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            border-radius: 6px;
+            background: transparent;
+            color: #fff;
+            cursor: pointer;
+            font-size: 0.82rem;
+        }
+        .zfmt-header-user button:hover {
+            background: rgba(255, 255, 255, 0.15);
+        }
+        .auth-gate {
+            position: fixed;
+            inset: 0;
+            z-index: 2000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+            background: radial-gradient(circle at top, rgba(0, 60, 136, 0.15), var(--page-bg));
+        }
+        .auth-card {
+            width: 100%;
+            max-width: 380px;
+            background: var(--panel-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            box-shadow: var(--shadow);
+            padding: 28px 26px;
+            box-sizing: border-box;
+        }
+        .auth-card-logo {
+            font-weight: 800;
+            font-size: 0.8rem;
+            letter-spacing: 0.18em;
+            text-transform: uppercase;
+            color: var(--accent);
+            margin-bottom: 10px;
+        }
+        .auth-card h1 {
+            margin: 0 0 8px;
+            font-size: 1.3rem;
+            color: var(--text-heading);
+        }
+        .auth-subtitle {
+            margin: 0 0 20px;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            line-height: 1.4;
+        }
+        .auth-form {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .auth-form label {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--accent);
+        }
+        .auth-form input {
+            height: 40px;
+            padding: 0 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            background: var(--accent-soft);
+            color: var(--text-primary);
+            font-size: 0.95rem;
+            box-sizing: border-box;
+        }
+        .auth-primary-button {
+            margin-top: 6px;
+            height: 42px;
+            border: none;
+            border-radius: 8px;
+            background: var(--accent);
+            color: #fff;
+            font-weight: 700;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: background 0.2s ease;
+        }
+        .auth-primary-button:hover {
+            background: var(--accent-2);
+        }
+        .auth-google-button {
+            width: 100%;
+            height: 42px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            background: var(--panel-bg);
+            color: var(--text-primary);
+            font-weight: 600;
+            font-size: 0.92rem;
+            cursor: pointer;
+            margin-bottom: 16px;
+        }
+        .auth-google-button:hover {
+            background: var(--accent-soft);
+        }
+        .auth-divider {
+            display: flex;
+            align-items: center;
+            text-align: center;
+            color: var(--text-secondary);
+            font-size: 0.8rem;
+            margin: 0 0 16px;
+        }
+        .auth-divider::before,
+        .auth-divider::after {
+            content: "";
+            flex: 1;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .auth-divider span {
+            padding: 0 10px;
+        }
+        .auth-link-button {
+            margin-top: 14px;
+            border: none;
+            background: none;
+            color: var(--accent-2);
+            font-size: 0.85rem;
+            cursor: pointer;
+            padding: 0;
+            text-decoration: underline;
+        }
+        .auth-message {
+            margin-top: 14px;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            min-height: 18px;
+        }
+        .auth-message.is-error {
+            color: #c0392b;
+        }
         </style>
         <title>Geoportal Zona Federal Marítimo Terrestre</title>
     </head>
     <body>
         <div id="zfmt-header">
             <div class="zfmt-header-logo">Información territorial y cartografía oficial </div>
-            <div class="zfmt-header-text">
-                <div class="zfmt-header-title">Geoportal Zona Federal Marítimo Terrestre</div>
-                <div class="zfmt-header-subtitle">H. XVIII Ayuntamiento de La Paz, Baja California Sur</div>
+            <div class="zfmt-header-right">
+                <div class="zfmt-header-text">
+                    <div class="zfmt-header-title">Geoportal Zona Federal Marítimo Terrestre</div>
+                    <div class="zfmt-header-subtitle">H. XVIII Ayuntamiento de La Paz, Baja California Sur</div>
+                </div>
+                <div class="zfmt-header-user" id="zfmt-header-user" hidden>
+                    <span id="zfmt-header-user-email"></span>
+                    <button id="logout-button" type="button">Cerrar sesión</button>
+                </div>
+            </div>
+        </div>
+        <div id="auth-gate" class="auth-gate">
+            <div class="auth-card">
+                <div class="auth-card-logo">Geoportal ZFMT</div>
+                <h1>Acceso al portal</h1>
+                <p class="auth-subtitle">Inicia sesión para consultar la cartografía oficial de la Zona Federal Marítimo Terrestre. El acceso es únicamente por invitación.</p>
+
+                <div id="auth-view-login" class="auth-view">
+                    <button id="auth-google-button" type="button" class="auth-google-button">Continuar con Google</button>
+                    <div class="auth-divider"><span>o</span></div>
+                    <form id="auth-login-form" class="auth-form">
+                        <label for="auth-email">Correo electrónico</label>
+                        <input id="auth-email" type="email" required autocomplete="username" />
+                        <label for="auth-password">Contraseña</label>
+                        <input id="auth-password" type="password" required autocomplete="current-password" />
+                        <button type="submit" class="auth-primary-button">Iniciar sesión</button>
+                    </form>
+                    <button id="auth-forgot-link" type="button" class="auth-link-button">¿Olvidaste tu contraseña?</button>
+                </div>
+
+                <div id="auth-view-set-password" class="auth-view" hidden>
+                    <p id="auth-set-password-intro"></p>
+                    <form id="auth-set-password-form" class="auth-form">
+                        <label for="auth-new-password">Nueva contraseña</label>
+                        <input id="auth-new-password" type="password" minlength="6" required autocomplete="new-password" />
+                        <button type="submit" class="auth-primary-button">Guardar y continuar</button>
+                    </form>
+                </div>
+
+                <div id="auth-view-forgot" class="auth-view" hidden>
+                    <p>Escribe tu correo y te enviaremos un enlace para restablecer tu contraseña.</p>
+                    <form id="auth-forgot-form" class="auth-form">
+                        <label for="auth-forgot-email">Correo electrónico</label>
+                        <input id="auth-forgot-email" type="email" required autocomplete="username" />
+                        <button type="submit" class="auth-primary-button">Enviar enlace</button>
+                    </form>
+                    <button id="auth-back-to-login" type="button" class="auth-link-button">Volver a iniciar sesión</button>
+                </div>
+
+                <div id="auth-message" class="auth-message" role="alert" aria-live="polite"></div>
             </div>
         </div>
         <main id="app-container">
@@ -538,19 +737,227 @@
                 </div>
             </section>
         </main>
-        <script src="resources/qgis2web_expressions.js"></script>
-        <script src="./resources/functions.js"></script>
-        <script src="./resources/ol.js"></script>
-        <script src="./resources/ol-layerswitcher.js"></script>
-        <script src="resources/photon-geocoder-autocomplete.min.js"></script>
-        <script src="resources/olms.js"></script>
-        <script src="resources/proj4.js"></script>
-        <script src="layers/OcupantesirregularesZFMT_1.js"></script><script src="layers/DesincorporacionesDGZFMT_2.js"></script><script src="layers/AcuerdosDestinoDGZMT_3.js"></script><script src="layers/ConcesionesDGZFMT_4.js"></script><script src="layers/DelimitacionesDGZFMT_5.js"></script><script src="layers/Cuadriculaestrategicazonificada_6.js"></script><script src="layers/RecintosPortuarios_7.js"></script>
-        <script src="styles/OcupantesirregularesZFMT_1_style.js"></script><script src="styles/DesincorporacionesDGZFMT_2_style.js"></script><script src="styles/AcuerdosDestinoDGZMT_3_style.js"></script><script src="styles/ConcesionesDGZFMT_4_style.js"></script><script src="styles/DelimitacionesDGZFMT_5_style.js"></script><script src="styles/Cuadriculaestrategicazonificada_6_style.js"></script><script src="styles/RecintosPortuarios_7_style.js"></script>
-        <script src="./layers/layers.js" type="text/javascript"></script> 
-        <script src="./resources/Autolinker.min.js"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-        <script src="./resources/qgis2web.js"></script>
+        <script>
+            var MAP_SCRIPTS = [
+                'resources/qgis2web_expressions.js',
+                './resources/functions.js',
+                './resources/ol.js',
+                './resources/ol-layerswitcher.js',
+                'resources/photon-geocoder-autocomplete.min.js',
+                'resources/olms.js',
+                'resources/proj4.js',
+                'layers/OcupantesirregularesZFMT_1.js',
+                'layers/DesincorporacionesDGZFMT_2.js',
+                'layers/AcuerdosDestinoDGZMT_3.js',
+                'layers/ConcesionesDGZFMT_4.js',
+                'layers/DelimitacionesDGZFMT_5.js',
+                'layers/Cuadriculaestrategicazonificada_6.js',
+                'layers/RecintosPortuarios_7.js',
+                'styles/OcupantesirregularesZFMT_1_style.js',
+                'styles/DesincorporacionesDGZFMT_2_style.js',
+                'styles/AcuerdosDestinoDGZMT_3_style.js',
+                'styles/ConcesionesDGZFMT_4_style.js',
+                'styles/DelimitacionesDGZFMT_5_style.js',
+                'styles/Cuadriculaestrategicazonificada_6_style.js',
+                'styles/RecintosPortuarios_7_style.js',
+                './layers/layers.js',
+                './resources/Autolinker.min.js',
+                'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js',
+                './resources/qgis2web.js'
+            ];
+            var mapScriptsRequested = false;
+            function loadMapScripts() {
+                if (mapScriptsRequested) { return; }
+                mapScriptsRequested = true;
+                var index = 0;
+                function loadNext() {
+                    if (index >= MAP_SCRIPTS.length) { return; }
+                    var script = document.createElement('script');
+                    script.src = MAP_SCRIPTS[index++];
+                    script.onload = loadNext;
+                    script.onerror = loadNext;
+                    document.body.appendChild(script);
+                }
+                loadNext();
+            }
+        </script>
+        <script type="module">
+            import {
+                login,
+                logout,
+                getUser,
+                oauthLogin,
+                handleAuthCallback,
+                onAuthChange,
+                requestPasswordRecovery,
+                acceptInvite,
+                updateUser,
+                AuthError,
+                MissingIdentityError,
+            } from 'https://esm.sh/@netlify/identity';
+
+            var gate = document.getElementById('auth-gate');
+            var viewLogin = document.getElementById('auth-view-login');
+            var viewSetPassword = document.getElementById('auth-view-set-password');
+            var viewForgot = document.getElementById('auth-view-forgot');
+            var messageEl = document.getElementById('auth-message');
+            var headerUser = document.getElementById('zfmt-header-user');
+            var headerUserEmail = document.getElementById('zfmt-header-user-email');
+            var logoutButton = document.getElementById('logout-button');
+
+            var pendingInviteToken = null;
+
+            function setMessage(text, isError) {
+                messageEl.textContent = text || '';
+                messageEl.classList.toggle('is-error', Boolean(isError));
+            }
+
+            function showView(view) {
+                [viewLogin, viewSetPassword, viewForgot].forEach(function (el) {
+                    el.hidden = el !== view;
+                });
+            }
+
+            function showApp(user) {
+                document.body.classList.add('authenticated');
+                gate.style.display = 'none';
+                headerUser.hidden = false;
+                headerUserEmail.textContent = (user && (user.email || (user.userMetadata && user.userMetadata.full_name))) || '';
+                loadMapScripts();
+            }
+
+            function showGate() {
+                document.body.classList.remove('authenticated');
+                gate.style.display = 'flex';
+                headerUser.hidden = true;
+                showView(viewLogin);
+            }
+
+            function describeError(error) {
+                if (error instanceof MissingIdentityError) {
+                    return 'La autenticación no está habilitada en este sitio todavía.';
+                }
+                if (error instanceof AuthError) {
+                    if (error.status === 401) { return 'Correo o contraseña incorrectos.'; }
+                    if (error.status === 403) { return 'El registro está deshabilitado. Solicita una invitación al administrador.'; }
+                    if (error.status === 422) { return 'Datos inválidos. Verifica el correo y la contraseña.'; }
+                    if (error.status === 404) { return 'No se encontró el usuario.'; }
+                    return error.message;
+                }
+                return 'Ocurrió un error inesperado.';
+            }
+
+            document.getElementById('auth-login-form').addEventListener('submit', async function (event) {
+                event.preventDefault();
+                var email = document.getElementById('auth-email').value.trim();
+                var password = document.getElementById('auth-password').value;
+                setMessage('Iniciando sesión...');
+                try {
+                    var user = await login(email, password);
+                    showApp(user);
+                } catch (error) {
+                    setMessage(describeError(error), true);
+                }
+            });
+
+            document.getElementById('auth-google-button').addEventListener('click', function () {
+                try {
+                    oauthLogin('google');
+                } catch (error) {
+                    setMessage(describeError(error), true);
+                }
+            });
+
+            document.getElementById('auth-forgot-link').addEventListener('click', function () {
+                setMessage('');
+                showView(viewForgot);
+            });
+
+            document.getElementById('auth-back-to-login').addEventListener('click', function () {
+                setMessage('');
+                showView(viewLogin);
+            });
+
+            document.getElementById('auth-forgot-form').addEventListener('submit', async function (event) {
+                event.preventDefault();
+                var email = document.getElementById('auth-forgot-email').value.trim();
+                try {
+                    await requestPasswordRecovery(email);
+                    setMessage('Revisa tu correo para restablecer tu contraseña.');
+                } catch (error) {
+                    setMessage(describeError(error), true);
+                }
+            });
+
+            document.getElementById('auth-set-password-form').addEventListener('submit', async function (event) {
+                event.preventDefault();
+                var password = document.getElementById('auth-new-password').value;
+                setMessage('Guardando...');
+                try {
+                    var user;
+                    if (pendingInviteToken) {
+                        user = await acceptInvite(pendingInviteToken, password);
+                        pendingInviteToken = null;
+                    } else {
+                        await updateUser({ password: password });
+                        user = await getUser();
+                    }
+                    showApp(user);
+                } catch (error) {
+                    setMessage(describeError(error), true);
+                }
+            });
+
+            logoutButton.addEventListener('click', async function () {
+                try {
+                    await logout();
+                } catch (error) {
+                    // ignore - session may already be gone
+                }
+                showGate();
+            });
+
+            onAuthChange(function (event, user) {
+                if (event === 'logout') {
+                    showGate();
+                }
+            });
+
+            (async function init() {
+                try {
+                    var result = await handleAuthCallback();
+                    if (window.history && window.history.replaceState) {
+                        window.history.replaceState(null, '', window.location.pathname + window.location.search);
+                    }
+                    if (result) {
+                        if (result.type === 'invite') {
+                            pendingInviteToken = result.token;
+                            document.getElementById('auth-set-password-intro').textContent = 'Crea una contraseña para activar tu cuenta.';
+                            showView(viewSetPassword);
+                            return;
+                        }
+                        if (result.type === 'recovery') {
+                            document.getElementById('auth-set-password-intro').textContent = 'Escribe una nueva contraseña para tu cuenta.';
+                            showView(viewSetPassword);
+                            return;
+                        }
+                        if ((result.type === 'oauth' || result.type === 'confirmation') && result.user) {
+                            showApp(result.user);
+                            return;
+                        }
+                    }
+                } catch (error) {
+                    setMessage(describeError(error), true);
+                }
+
+                var user = await getUser();
+                if (user) {
+                    showApp(user);
+                } else {
+                    showGate();
+                }
+            })();
+        </script>
         <script>
             var sidebar = document.getElementById('sidebar');
             var sidebarToggle = document.getElementById('sidebar-toggle');
